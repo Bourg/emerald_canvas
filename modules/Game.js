@@ -1,5 +1,7 @@
 import Tileset from "./framework/Tileset.js";
 import Scene from "./framework/Scene.js";
+import Player from "./entity/Player.js";
+import Camera from "./framework/Camera.js";
 
 const PARAMS = {
   width: 240,
@@ -7,7 +9,7 @@ const PARAMS = {
   gridSize: 16
 };
 
-async function Game() {
+function initContext() {
   // Attach to the canvas
   const canvas = document.querySelector("canvas#game");
   const context = canvas.getContext("2d");
@@ -16,60 +18,85 @@ async function Game() {
   canvas.width = PARAMS.width;
   canvas.height = PARAMS.height;
 
+  return context;
+}
+
+async function play() {
+  const context = initContext();
+
   // Test code for loading the sprite sheet
-  const tileset = await Tileset.load(
+  const tilesetPromise = Tileset.load(
     "texture/littleroot.png",
     PARAMS.gridSize,
     PARAMS.gridSize,
     16,
-    16
+    24
   ).catch(() => alert("Failed to load textures"));
 
-  if (!tileset) {
+  const playerPromise = Player.load(175, 175);
+
+  const resolvedPromises = await Promise.all([tilesetPromise, playerPromise]);
+
+  // If anything failed to load, stop
+  if (resolvedPromises.filter(p => p == null).length > 0) {
     return;
   }
 
+  const [tileset, player] = resolvedPromises;
+
   const scene = new Scene(tileset);
 
-  let x = 0;
-  let y = 0;
-  let dx = 0;
-  let dy = 0;
-  document.addEventListener("keydown", e => {
-    console.log(e.keyCode);
+  const camera = new Camera(
+    140,
+    140,
+    PARAMS.width,
+    PARAMS.height,
+    30 * PARAMS.gridSize,
+    26 * PARAMS.gridSize
+  );
+  camera.follow(player, PARAMS.width / 2, PARAMS.height / 2);
+
+  window.addEventListener("keydown", e => {
+    let direction = undefined;
+
     switch (e.keyCode) {
-      case 87:
-        dx = 0;
-        dy = -1;
+      case 37:
+        direction = "LEFT";
         break;
-      case 65:
-        dx = -1;
-        dy = 0;
+      case 38:
+        direction = "UP";
         break;
-      case 83:
-        dx = 0;
-        dy = 1;
+      case 39:
+        direction = "RIGHT";
         break;
-      case 68:
-        dx = 1;
-        dy = 0;
+      case 40:
+        direction = "DOWN";
         break;
-      default:
-        dx = 0;
-        dy = 0;
+    }
+
+    if (direction) {
+      player.onDirection(direction);
     }
   });
 
+  function update() {
+    player.update();
+    camera.update();
+  }
+
+  function draw() {
+    context.clearRect(0, 0, PARAMS.width, PARAMS.height);
+    scene.draw(context, camera, true);
+    player.draw(context, camera);
+  }
+
+  // Start the game loop
   animate();
   function animate() {
-    context.clearRect(0, 0, PARAMS.width, PARAMS.height);
-    scene.draw(context, x, y, PARAMS.width, PARAMS.height);
-    x += dx;
-    y += dy;
     requestAnimationFrame(animate);
+    update();
+    draw();
   }
 }
 
-window.Game = Game;
-
-export default Game;
+window.onload = play();

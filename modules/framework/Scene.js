@@ -4,18 +4,20 @@ export default class Scene {
     this.tileset = tileset;
   }
 
-  draw(context, sceneX, sceneY, width, height) {
+  draw(context, camera, grid = false) {
     // Determine the starting tile number by seeing how many tiles need in we are
-    let startTileX = Math.floor(sceneX / this.tileset.getGridX());
-    let startTileY = Math.floor(sceneY / this.tileset.getGridY());
+    let startTileX = Math.floor(camera.xView / this.tileset.getGridX());
+    let startTileY = Math.floor(camera.yView / this.tileset.getGridY());
 
     // However different the scale of a single tile is to the scene position, compute shift
-    let shiftX = sceneX % this.tileset.getGridX();
-    let shiftY = sceneY % this.tileset.getGridY();
+    let shiftX = camera.xView % this.tileset.getGridX();
+    let shiftY = camera.yView % this.tileset.getGridY();
 
     // Continue however many tiles are needed to fill the requested size
-    let endTileX = startTileX + Math.ceil(width / this.tileset.getGridX());
-    let endTileY = startTileY + Math.ceil(height / this.tileset.getGridY());
+    let endTileX =
+      startTileX + Math.ceil(camera.wView / this.tileset.getGridX());
+    let endTileY =
+      startTileY + Math.ceil(camera.hView / this.tileset.getGridY());
 
     // If there are shifts, there need to be extra tiles to cover the offset
     if (shiftX != 0) {
@@ -26,16 +28,27 @@ export default class Scene {
       endTileY++;
     }
 
+    context.save();
+    context.strokeStyle = "#000";
+
     for (let x = startTileX; x < endTileX; x++) {
       for (let y = startTileY; y < endTileY; y++) {
-        this.tileset.draw(
-          context,
-          x,
-          y,
-          (x - startTileX) * this.tileset.getGridX() - shiftX,
-          (y - startTileY) * this.tileset.getGridY() - shiftY
-        );
+        const targetX = (x - startTileX) * this.tileset.getGridX() - shiftX;
+        const targetY = (y - startTileY) * this.tileset.getGridY() - shiftY;
+
+        this.tileset.draw(context, x, y, targetX, targetY);
+
+        if (grid) {
+          context.strokeRect(
+            targetX,
+            targetY,
+            this.tileset.getGridX(),
+            this.tileset.getGridY()
+          );
+        }
       }
     }
+
+    context.restore();
   }
 }
