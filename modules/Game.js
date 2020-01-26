@@ -2,6 +2,7 @@ import Tileset from "./framework/Tileset.js";
 import Scene from "./framework/Scene.js";
 import Player from "./entity/Player.js";
 import Camera from "./framework/Camera.js";
+import { useArrowKeys } from "./framework/Keys.js";
 
 const PARAMS = {
   width: 240,
@@ -47,46 +48,25 @@ async function play() {
   const scene = new Scene(tileset);
 
   const camera = new Camera(
-    140,
-    140,
+    0,
+    0,
     PARAMS.width,
     PARAMS.height,
     30 * PARAMS.gridSize,
-    26 * PARAMS.gridSize
+    25 * PARAMS.gridSize
   );
   camera.follow(player, PARAMS.width / 2, PARAMS.height / 2);
 
-  window.addEventListener("keydown", e => {
-    let direction = undefined;
-
-    switch (e.keyCode) {
-      case 37:
-        direction = "LEFT";
-        break;
-      case 38:
-        direction = "UP";
-        break;
-      case 39:
-        direction = "RIGHT";
-        break;
-      case 40:
-        direction = "DOWN";
-        break;
-    }
-
-    if (direction) {
-      player.onDirection(direction);
-    }
-  });
+  const directionBox = useArrowKeys(window);
 
   function update() {
-    player.update();
+    player.update(directionBox.direction);
     camera.update();
   }
 
   function draw() {
     context.clearRect(0, 0, PARAMS.width, PARAMS.height);
-    scene.draw(context, camera, true);
+    scene.draw(context, camera);
     player.draw(context, camera);
   }
 

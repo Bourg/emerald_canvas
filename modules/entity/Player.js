@@ -5,9 +5,8 @@ export default class Player {
     this.y = y;
     this.facingDirection = facingDirection;
 
-    this.currentAnimation = null;
-    this.currentAnimationFrame = 0;
-    this.animationQueue = [];
+    this.walkDistance = 0;
+    this.walkFrame = 0;
   }
 
   static load(x, y) {
@@ -22,76 +21,64 @@ export default class Player {
   draw(context, camera) {
     const { x, y } = camera.viewCoordinate(this.x, this.y);
 
-    context.drawImage(this.image, -1, -2, 16, 24, x + 1, y - 8, 16, 24);
-  }
+    const animationStep =
+      this.walkDistance > 0 ? Math.floor(this.walkFrame / 32) % 4 : 1;
+    let sy = 0;
 
-  update() {
-    // Pick up a new animation if none is ongoing
-    if (!this.currentAnimation) {
-      this.currentAnimation = this.animationQueue.shift();
+    if (animationStep == 0) {
+      sy = 22;
+    } else if (animationStep == 2) {
+      sy = 44;
     }
 
-    // If no animation was picked up, there's nothing to update
-    if (!this.currentAnimation) {
-      return;
-    }
-
-    // Execute the ongonig animation
-    switch (this.currentAnimation.action) {
-      case "TURN":
-        // Turn animation is instant
-        this.facingDirection = this.currentAnimation.direction;
-        this.currentAnimation = null;
+    let sx = 0;
+    switch (this.facingDirection) {
+      case "UP":
+        sx = 15;
         break;
-      case "WALK":
-        this.currentAnimation = this.handleWalkingAnimation(
-          this.currentAnimation
-        );
+      case "DOWN":
+        sx = 0;
+        break;
+      case "LEFT":
+        sx = 30;
+        break;
+      case "RIGHT":
+        sx = 300;
         break;
     }
 
-    // Advance the current animation, or zero the frame if the animation ended
-    if (this.currentAnimation) {
-      this.currentAnimationFrame++;
-    } else {
-      this.currentAnimationFrame = 0;
-    }
+    context.drawImage(this.image, sx, sy, 14, 21, x + 2, y - 6, 14, 21);
   }
 
-  onDirection(direction) {
-    // Ongoing animations are blocking
-    if (this.currentAnimation || this.animationQueue.length > 0) {
-      return;
-    }
-
-    this.animationQueue = [
-      {
-        action: "TURN",
-        direction
-      },
-      {
-        action: "WALK",
-        speed: 0.5,
-        distance: 16 //TODO this is bad
+  update(direction) {
+    // Start walking if not already walking
+    if (this.walkDistance <= 0) {
+      if (direction) {
+        this.facingDirection = direction;
+        this.walkDistance = 16;
+      } else {
+        this.walkFrame = 0;
       }
-    ];
-  }
+    }
 
-  handleWalkingAnimation(animation) {
-    animation.distance -= animation.speed;
+    if (this.walkDistance <= 0) {
+      return;
+    }
+
+    const speed = 0.5;
 
     switch (this.facingDirection) {
       case "UP":
-        this.y -= animation.speed;
+        this.y -= speed;
         break;
       case "DOWN":
-        this.y += animation.speed;
+        this.y += speed;
         break;
       case "LEFT":
-        this.x -= animation.speed;
+        this.x -= speed;
         break;
       case "RIGHT":
-        this.x += animation.speed;
+        this.x += speed;
         break;
       default:
         // Corrupt animation, self repair
@@ -100,6 +87,7 @@ export default class Player {
         return null;
     }
 
-    return animation.distance > 0 ? animation : null;
+    this.walkFrame++;
+    this.walkDistance -= speed;
   }
 }
