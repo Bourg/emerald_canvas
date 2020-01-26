@@ -1,0 +1,29 @@
+:root {
+  --color-dark: #02020b;
+  --color-red: #d7263d;
+  --color-gray: #cdcdcd;
+}
+
+body {
+  color: #fff;
+  background: var(--color-dark);
+}
+
+main {
+  max-width: 1200px;
+  padding: 48px;
+  margin: auto;
+}
+
+h1 {
+  text-align: center;
+  padding: 12px;
+  margin-bottom: 16px;
+  font-size: 48px;
+  background: var(--color-blue);
+}
+
+.game {
+  background: var(--color-gray);
+  width: 100%;
+}
