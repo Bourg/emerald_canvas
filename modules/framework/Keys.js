@@ -4,22 +4,7 @@ export function useArrowKeys(mountTo) {
   let directions = [];
   const directionsSet = new Set();
   mountTo.addEventListener("keydown", e => {
-    let direction = null;
-
-    switch (e.keyCode) {
-      case 37:
-        direction = "LEFT";
-        break;
-      case 38:
-        direction = "UP";
-        break;
-      case 39:
-        direction = "RIGHT";
-        break;
-      case 40:
-        direction = "DOWN";
-        break;
-    }
+    let direction = keyCodeToDirection(e.keyCode);
 
     if (direction && !directionsSet.has(direction)) {
       directions.unshift(direction);
@@ -29,22 +14,7 @@ export function useArrowKeys(mountTo) {
   });
 
   mountTo.addEventListener("keyup", e => {
-    let direction = null;
-
-    switch (e.keyCode) {
-      case 37:
-        direction = "LEFT";
-        break;
-      case 38:
-        direction = "UP";
-        break;
-      case 39:
-        direction = "RIGHT";
-        break;
-      case 40:
-        direction = "DOWN";
-        break;
-    }
+    let direction = keyCodeToDirection(e.keyCode);
 
     if (direction && directionsSet.has(direction)) {
       directions = directions.filter(d => d !== direction);
@@ -59,4 +29,23 @@ export function useArrowKeys(mountTo) {
   });
 
   return directionBox;
+}
+
+function keyCodeToDirection(keyCode) {
+  switch (keyCode) {
+    case 37:
+    case 65:
+      return "LEFT";
+    case 38:
+    case 87:
+      return "UP";
+    case 39:
+    case 68:
+      return "RIGHT";
+    case 40:
+    case 83:
+      return "DOWN";
+  }
+
+  return null;
 }
