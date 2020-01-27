@@ -4,7 +4,7 @@ export default class Scene {
     this.tileset = tileset;
   }
 
-  draw(context, camera, grid = false) {
+  draw(context, camera, options = {}) {
     // Determine the starting tile number by seeing how many tiles need in we are
     let startTileX = Math.floor(camera.xView / this.tileset.getGridX());
     let startTileY = Math.floor(camera.yView / this.tileset.getGridY());
@@ -38,7 +38,7 @@ export default class Scene {
 
         this.tileset.draw(context, x, y, targetX, targetY);
 
-        if (grid) {
+        if (options.showGrid) {
           context.strokeRect(
             targetX,
             targetY,

@@ -22,8 +22,23 @@ function initContext() {
   return context;
 }
 
+function initTweakables() {
+  const tweakables = {
+    showGrid: false
+  };
+
+  const showGridCheckbox = document.querySelector('input[name="showGrid"]');
+  tweakables.showGrid = showGridCheckbox.checked;
+  showGridCheckbox.addEventListener("change", e => {
+    tweakables.showGrid = e.target.checked;
+  });
+
+  return tweakables;
+}
+
 async function play() {
   const context = initContext();
+  const tweakables = initTweakables();
 
   // Test code for loading the sprite sheet
   const tilesetPromise = Tileset.load(
@@ -66,7 +81,7 @@ async function play() {
 
   function draw() {
     context.clearRect(0, 0, PARAMS.width, PARAMS.height);
-    scene.draw(context, camera);
+    scene.draw(context, camera, { showGrid: tweakables.showGrid });
     player.draw(context, camera);
   }
 
