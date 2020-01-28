@@ -1,13 +1,10 @@
-import Tileset from "./engine/framework/Tileset.js";
-import Scene from "./engine/framework/Scene.js";
-import Player from "./game/Player.js";
-import Camera from "./engine/framework/Camera.js";
-import { useArrowKeys } from "./engine/input/Keys.js";
 import World from "./engine/world/world.js";
+import FrameRateDisplay from "./engine/debug/FrameRateDisplay.js";
+import { useArrowKeys } from "./engine/input/Keys.js";
 
 const PARAMS = {
-  width: 500,
-  height: 300,
+  viewportWidth: 500,
+  viewportHeight: 300,
   gridSize: 24
 };
 
@@ -17,85 +14,42 @@ function initContext() {
   const context = canvas.getContext("2d");
 
   // Apply width and height of the GBA viewport to the canvas
-  canvas.width = PARAMS.width;
-  canvas.height = PARAMS.height;
+  canvas.width = PARAMS.viewportWidth;
+  canvas.height = PARAMS.viewportHeight;
 
   return context;
 }
 
-function initTweakables() {
-  const tweakables = {
-    showGrid: false
-  };
-
-  const showGridCheckbox = document.querySelector('input[name="showGrid"]');
-  tweakables.showGrid = showGridCheckbox.checked;
-  showGridCheckbox.addEventListener("change", e => {
-    tweakables.showGrid = e.target.checked;
-  });
-
-  return tweakables;
-}
-
 async function play() {
   const context = initContext();
-  const tweakables = initTweakables();
-
-  // Test code for loading the sprite sheet
-  const tilesetPromise = Tileset.load(
-    "texture/littleroot.png",
-    PARAMS.gridSize,
-    PARAMS.gridSize,
-    16,
-    24
-  ).catch(() => alert("Failed to load textures"));
-
-  const playerPromise = Player.load(175, 175);
-
-  const resolvedPromises = await Promise.all([tilesetPromise, playerPromise]);
-
-  // If anything failed to load, stop
-  if (resolvedPromises.filter(p => p == null).length > 0) {
-    return;
-  }
-
-  const [tileset, player] = resolvedPromises;
-
-  const scene = new Scene(tileset);
-
-  const camera = new Camera(
-    0,
-    0,
-    PARAMS.width,
-    PARAMS.height,
-    30 * PARAMS.gridSize,
-    25 * PARAMS.gridSize
-  );
-  camera.follow(player, PARAMS.width / 2, PARAMS.height / 2);
-
   const directionBox = useArrowKeys(window);
 
   const world = new World(10, 10, PARAMS.gridSize);
-  world.attachCamera(PARAMS.width, PARAMS.height);
+  world.attachCamera(PARAMS.viewportWidth, PARAMS.viewportHeight);
 
-  function update() {
-    world.update();
-    // player.update(directionBox.direction);
-    // camera.update();
+  const frameRateDisplay = new FrameRateDisplay();
+
+  function update(elapsedMillis) {
+    world.update(elapsedMillis);
+    frameRateDisplay.update(elapsedMillis);
   }
 
   function draw() {
     world.draw(context);
-    // context.clearRect(0, 0, PARAMS.width, PARAMS.height);
-    // scene.draw(context, camera, { showGrid: tweakables.showGrid });
-    // player.draw(context, camera);
+    frameRateDisplay.draw(context);
   }
 
-  // Start the game loop
+  let timeBeforeUpdate = new Date();
+  let timeAfterUpdate = timeBeforeUpdate;
+
   animate();
   function animate() {
     requestAnimationFrame(animate);
-    update();
+
+    timeBeforeUpdate = new Date();
+    update(timeBeforeUpdate - timeAfterUpdate);
+    timeAfterUpdate = new Date();
+
     draw();
   }
 }

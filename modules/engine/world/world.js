@@ -33,6 +33,7 @@ export default class World {
     this.tileResolution = tileResolution;
     this.colors = colors || this.COLORS;
 
+    // Initialize the world with no entities
     this.entities = [];
 
     // TODO consider leaving the camera out of the world directly
@@ -55,6 +56,10 @@ export default class World {
       this.xPixels,
       this.yPixels
     );
+  }
+
+  addEntity(entity) {
+    this.entities.push(entity);
   }
 
   update(elapsedMillis) {}
