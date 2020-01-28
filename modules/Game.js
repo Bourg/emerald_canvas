@@ -1,8 +1,8 @@
-import Tileset from "./framework/Tileset.js";
-import Scene from "./framework/Scene.js";
-import Player from "./entity/Player.js";
-import Camera from "./framework/Camera.js";
-import { useArrowKeys } from "./framework/Keys.js";
+import Tileset from "./engine/framework/Tileset.js";
+import Scene from "./engine/framework/Scene.js";
+import Player from "./engine/entity/Player.js";
+import Camera from "./engine/framework/Camera.js";
+import { useArrowKeys } from "./engine/framework/Keys.js";
 
 const PARAMS = {
   width: 240,
