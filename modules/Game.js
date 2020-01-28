@@ -1,13 +1,14 @@
 import Tileset from "./engine/framework/Tileset.js";
 import Scene from "./engine/framework/Scene.js";
-import Player from "./engine/entity/Player.js";
+import Player from "./game/Player.js";
 import Camera from "./engine/framework/Camera.js";
 import { useArrowKeys } from "./engine/input/Keys.js";
+import World from "./engine/world/world.js";
 
 const PARAMS = {
-  width: 240,
-  height: 160,
-  gridSize: 16
+  width: 500,
+  height: 300,
+  gridSize: 24
 };
 
 function initContext() {
@@ -74,15 +75,20 @@ async function play() {
 
   const directionBox = useArrowKeys(window);
 
+  const world = new World(10, 10, PARAMS.gridSize);
+  world.attachCamera(PARAMS.width, PARAMS.height);
+
   function update() {
-    player.update(directionBox.direction);
-    camera.update();
+    world.update();
+    // player.update(directionBox.direction);
+    // camera.update();
   }
 
   function draw() {
-    context.clearRect(0, 0, PARAMS.width, PARAMS.height);
-    scene.draw(context, camera, { showGrid: tweakables.showGrid });
-    player.draw(context, camera);
+    world.draw(context);
+    // context.clearRect(0, 0, PARAMS.width, PARAMS.height);
+    // scene.draw(context, camera, { showGrid: tweakables.showGrid });
+    // player.draw(context, camera);
   }
 
   // Start the game loop
